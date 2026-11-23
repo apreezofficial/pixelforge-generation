@@ -38,10 +38,14 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
-            'transaction_mode' => 'DEFERRED',
+            // The web process, queue worker and scheduler share one SQLite file. WAL plus a busy
+            // timeout lets them wait for each other instead of failing with "database is locked",
+            // and IMMEDIATE transactions take the write lock up front so lock-then-write
+            // sequences (webhook handling, balance checks) serialise correctly.
+            'busy_timeout' => 5000,
+            'journal_mode' => 'WAL',
+            'synchronous' => 'NORMAL',
+            'transaction_mode' => 'IMMEDIATE',
         ],
 
         'mysql' => [
