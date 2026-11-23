@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // The host terminates HTTPS in front of the app; trust its forwarded headers so
+        // generated asset and redirect URLs use https instead of being blocked as mixed content.
+        $middleware->trustProxies(at: '*');
+
         // Pixelforge posts webhooks without a CSRF token; they are authenticated by signature.
         $middleware->validateCsrfTokens(except: [
             'webhooks/pixelforge',
